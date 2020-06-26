@@ -103,6 +103,28 @@ func (c *Client) GetInfo() (*Info, error) {
 	return info, nil
 }
 
+// GetLatestEvent returns the head event
+func (c *Client) GetLatestEvent(stream string) (*Event, error) {
+
+	headFeed, err := c.GetStreamHead(stream)
+	if err != nil {
+		return nil, err
+	}
+	alternateLink, err := headFeed.GetAlternateLink()
+	if err != nil {
+		return nil, err
+	}
+	latestEventNo, err := strconv.Atoi(path.Base(alternateLink))
+	if err != nil {
+		return nil, err
+	}
+	latestEvent, err := c.GetEvent(stream, latestEventNo)
+	if err != nil {
+		return nil, err
+	}
+	return latestEvent, nil
+}
+
 // GetStreamHead returns the head of a stream
 func (c *Client) GetStreamHead(stream string) (*atom.Feed, error) {
 	feed := &atom.Feed{}

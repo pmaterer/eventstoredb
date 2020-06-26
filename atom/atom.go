@@ -1,6 +1,9 @@
 package atom
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 // Feed represents an atom feed
 type Feed struct {
@@ -35,4 +38,13 @@ type Entry struct {
 	Author  Author    `json:"author"`
 	Summary string    `json:"summary"`
 	Links   []Link    `json:"links"`
+}
+
+func (feed *Feed) GetAlternateLink() (string, error) {
+	for _, link := range feed.Links {
+		if link.Relation == "alternate" {
+			return link.URI, nil
+		}
+	}
+	return "", errors.New("Alternate link not found")
 }
