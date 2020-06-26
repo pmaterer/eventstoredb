@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/pmaterer/eventstoredb/atom"
 )
 
 const (
@@ -72,7 +73,7 @@ type Info struct {
 
 // Event represents a generic EventStoreDB event.
 type Event struct {
-	eventID   string      `json:"eventId"`
+	EventID   string      `json:"eventId"`
 	EventType string      `json:"eventType"`
 	Data      interface{} `json:"data"`
 	Metadata  interface{} `json:"metadata"`
@@ -81,7 +82,7 @@ type Event struct {
 // NewEvent constructs a new Event type.
 func NewEvent(eventType string, data, metadata interface{}) *Event {
 	return &Event{
-		eventID:   uuid.New().String(),
+		EventID:   uuid.New().String(),
 		EventType: eventType,
 		Data:      data,
 		Metadata:  metadata,
@@ -102,6 +103,36 @@ func (c *Client) GetInfo() (*Info, error) {
 	return info, nil
 }
 
+// GetStreamHead returns the head of a stream
+func (c *Client) GetStreamHead(stream string) (*atom.Feed, error) {
+	feed := &atom.Feed{}
+	req, err := c.newRequest("GET", fmt.Sprintf("/streams/%s/head", stream), nil)
+	if err != nil {
+		return nil, err
+	}
+	_, err = c.do(req, feed)
+	if err != nil {
+		return nil, err
+	}
+
+	return feed, nil
+}
+
+// GetEvent returns the eventNo event of the stream
+func (c *Client) GetEvent(stream string, eventNo int) (*Event, error) {
+
+	event := &Event{}
+	req, err := c.newRequest("GET", fmt.Sprintf("/streams/%s/%d", stream, eventNo), nil)
+	if err != nil {
+		return nil, err
+	}
+	_, err = c.do(req, event)
+	if err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
 // WriteEvent writes the given Event to an event stream.
 func (c *Client) WriteEvent(event *Event) (int, error) {
 
@@ -111,7 +142,7 @@ func (c *Client) WriteEvent(event *Event) (int, error) {
 	}
 
 	req.Header.Set("ES-EventType", event.EventType)
-	req.Header.Set("ES-EventId", event.eventID)
+	req.Header.Set("ES-EventId", event.EventID)
 
 	resp, err := c.do(req, nil)
 	if err != nil {
