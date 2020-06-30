@@ -17,7 +17,7 @@ var testFeed = &Feed{
 }
 
 func TestGetAlternateLink(t *testing.T) {
-	alternateLink, err := testFeed.GetAlternateLink()
+	alternateLink, err := testFeed.GetLink(Alternate)
 	if err != nil {
 		t.Errorf("atom.GetAlternateLink returned an error: %s", err)
 	}

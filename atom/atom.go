@@ -40,9 +40,22 @@ type Entry struct {
 	Links   []Link    `json:"links"`
 }
 
-func (feed *Feed) GetAlternateLink() (string, error) {
+type LinkRelation string
+
+const (
+	Self      LinkRelation = "self"
+	First                  = "first"
+	Last                   = "last"
+	Next                   = "next"
+	Previous               = "previous"
+	Metadata               = "metadata"
+	Edit                   = "edit"
+	Alternate              = "alternate"
+)
+
+func (feed *Feed) GetLink(l LinkRelation) (string, error) {
 	for _, link := range feed.Links {
-		if link.Relation == "alternate" {
+		if link.Relation == string(l) {
 			return link.URI, nil
 		}
 	}
